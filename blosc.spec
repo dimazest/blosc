@@ -1,13 +1,17 @@
 %{!?_pkgdocdir: %global _pkgdocdir %{_docdir}/%{name}-%{version}}
+%global subversion rc2
 
 Summary: A high performance compressor optimized for binary data
 Name: blosc
-Version: 1.2.3
-Release: 9%{?dist}
+Version: 1.3.0
+Release: 1.%{subversion}%{?dist}
 License: MIT
-Source: http://blosc.org/sources/%{version}/%{name}-%{version}.tar.gz
-URL:  http://blosc.org
+Source: https://github.com/FrancescAlted/blosc/archive/v%{version}-%{subversion}.tar.gz
+URL:  https://github.com/FrancescAlted/blosc
 BuildRequires: cmake
+#BuildRequires: lz4-devel
+BuildRequires: snappy-devel
+BuildRequires: zlib-devel
 
 %description
 Blosc is a compression library designed to transmit data to the processor 
@@ -31,14 +35,11 @@ Requires: python-matplotlib
 
 %description bench
 The blosc-bench package contains a benchmark suite which evaluates
-the performances of Blosc, and compare them with memcpy.
+the performance of Blosc, and compares it with memcpy.
 
 %prep
-%setup -q
-
-# Fix library version
-sed -i 's|BLOSC_VERSION_MINOR 1|BLOSC_VERSION_MINOR 2|' CMakeLists.txt
-sed -i 's|BLOSC_VERSION_PATCH 6|BLOSC_VERSION_PATCH 3|' CMakeLists.txt
+%setup -q -n %{name}-%{version}-%{subversion}
+rm -r internal-complibs/snappy* internal-complibs/zlib*
 
 # Fix rpath issue
 sed -i '1i  set\(CMAKE_SKIP_RPATH true\)' bench/CMakeLists.txt
@@ -66,8 +67,13 @@ sed -i '1i  #!/usr/bin/python' bench/plot-speeds.py
 make VERBOSE=1 %{?_smp_mflags}
 
 %check
-make test VERBOSE=1
-
+# make test VERBOSE=1
+build/test_api
+build/test_basics
+for c in lz4 lz4hc snappy zlib; do
+    LD_LIBRARY_PATH=blosc bench/bench $c single 1
+    LD_LIBRARY_PATH=blosc bench/bench $c single
+done
 
 %install
 
@@ -103,6 +109,9 @@ install -p bench/plot-speeds.py ${RPM_BUILD_ROOT}/%{_bindir}/%{name}-plot-times
 
 
 %changelog
+* Tue Jan 07 2014 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 1.3.0-1.rc2
+- Attempt to package new version
+
 * Tue Oct 22 2013 Thibault North <tnorth@fedoraproject.org> - 1.2.3-9
 - Fix flags and bench compilation
 
