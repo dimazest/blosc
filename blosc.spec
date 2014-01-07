@@ -68,8 +68,8 @@ make VERBOSE=1 %{?_smp_mflags}
 
 %check
 # make test VERBOSE=1
-build/test_api
-build/test_basics
+tests/test_api
+tests/test_basics
 for c in lz4 lz4hc snappy zlib; do
     LD_LIBRARY_PATH=blosc bench/bench $c single 1
     LD_LIBRARY_PATH=blosc bench/bench $c single
