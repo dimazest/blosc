@@ -1,12 +1,11 @@
 %{!?_pkgdocdir: %global _pkgdocdir %{_docdir}/%{name}-%{version}}
-%global subversion rc2
 
 Summary: A high performance compressor optimized for binary data
 Name: blosc
-Version: 1.3.0
-Release: 1.%{subversion}%{?dist}
+Version: 1.3.4
+Release: 1%{?dist}
 License: MIT
-Source: https://github.com/FrancescAlted/blosc/archive/v%{version}-%{subversion}.tar.gz
+Source: https://github.com/FrancescAlted/blosc/archive/v%{version}.tar.gz
 URL:  https://github.com/FrancescAlted/blosc
 BuildRequires: cmake
 #BuildRequires: lz4-devel
@@ -38,7 +37,7 @@ The blosc-bench package contains a benchmark suite which evaluates
 the performance of Blosc, and compares it with memcpy.
 
 %prep
-%setup -q -n %{name}-%{version}-%{subversion}
+%setup -q -n c-%{name}-%{version}
 rm -r internal-complibs/snappy* internal-complibs/zlib*
 
 # Fix rpath issue
@@ -109,6 +108,9 @@ install -p bench/plot-speeds.py ${RPM_BUILD_ROOT}/%{_bindir}/%{name}-plot-times
 
 
 %changelog
+* Fri Mar 21 2014 Thibault North <tnorth@fedoraproject.org> - 1.3.4-1
+- Update to 1.3.4
+
 * Tue Jan 07 2014 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl> - 1.3.0-1.rc2
 - Attempt to package new version
 
