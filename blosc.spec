@@ -3,7 +3,7 @@
 Summary: A high performance compressor optimized for binary data
 Name: blosc
 Version: 1.3.5
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: MIT
 Source: https://github.com/FrancescAlted/blosc/archive/v%{version}.tar.gz
 URL:  https://github.com/FrancescAlted/blosc
@@ -108,6 +108,9 @@ install -p bench/plot-speeds.py ${RPM_BUILD_ROOT}/%{_bindir}/%{name}-plot-times
 
 
 %changelog
+* Sat Jun 07 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.3.5-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
+
 * Sat Mar 22 2014 Thibault North <tnorth@fedoraproject.org> - 1.3.5-1
 - Update to 1.3.5
 
