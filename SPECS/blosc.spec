@@ -76,16 +76,16 @@ sed -i '1i  #!/usr/bin/python' bench/plot-speeds.py
 make VERBOSE=1 %{?_smp_mflags}
 %{?scl:EOF}
 
-# %check
-# %{?scl:scl enable %{scl} - << \EOF}
-# # make test VERBOSE=1
-# tests/test_api
-# tests/test_basics
-# for c in lz4 lz4hc snappy zlib; do
-#     LD_LIBRARY_PATH=blosc bench/bench $c single 1
-#     LD_LIBRARY_PATH=blosc bench/bench $c single
-# done
-# %{?scl:EOF}
+%check
+%{?scl:scl enable %{scl} - << \EOF}
+# make test VERBOSE=1
+tests/test_api
+tests/test_basics
+for c in lz4 lz4hc snappy zlib; do
+    LD_LIBRARY_PATH=blosc bench/bench $c single 1
+    LD_LIBRARY_PATH=blosc bench/bench $c single
+done
+%{?scl:EOF}
 
 %install
 
