@@ -1,43 +1,46 @@
+%{?scl:%scl_package blosc}
+%{!?scl:%global pkg_name %{name}}
+
 %{!?_pkgdocdir: %global _pkgdocdir %{_docdir}/%{name}-%{version}}
 
 Summary: A high performance compressor optimized for binary data
-Name: blosc
-Version: 1.3.5
-Release: 3%{?dist}
+Name: %{?scl_prefix}blosc
+Version: 1.4.1
+Release: 1%{?dist}
 License: MIT
 Source: https://github.com/FrancescAlted/blosc/archive/v%{version}.tar.gz
 URL:  https://github.com/FrancescAlted/blosc
-BuildRequires: cmake
+BuildRequires: cmake28
 #BuildRequires: lz4-devel
 BuildRequires: snappy-devel
 BuildRequires: zlib-devel
 
 %description
-Blosc is a compression library designed to transmit data to the processor 
-cache faster than the traditional non-compressed memory fetch. 
-Compression ratios are not very high, but the decompression is very fast. 
-Blosc is meant not only to reduce the size of large datasets on-disk or 
+Blosc is a compression library designed to transmit data to the processor
+cache faster than the traditional non-compressed memory fetch.
+Compression ratios are not very high, but the decompression is very fast.
+Blosc is meant not only to reduce the size of large datasets on-disk or
 in-memory, but also to accelerate memory-bound computations.
 
 %package devel
 Summary: Header files and libraries for Blosc development
-Requires: %{name}%{?_isa} = %{version}-%{release}
+Requires: %{?scl_prefix}%{pkg_name}%{?_isa} = %{version}-%{release}
 
 %description devel
 The blosc-devel package contains the header files and libraries needed
 to develop programs that use the blosc meta-compressor.
 
-%package bench
-Summary: Benchmark for the Blosc compressor
-Requires: %{name} = %{version}-%{release}
-Requires: python-matplotlib
+# %package bench
+# Summary: Benchmark for the Blosc compressor
+# Requires: %{pkg_name} = %{version}-%{release}
+# Requires: python-matplotlib
 
-%description bench
-The blosc-bench package contains a benchmark suite which evaluates
-the performance of Blosc, and compares it with memcpy.
+# %description bench
+# The blosc-bench package contains a benchmark suite which evaluates
+# the performance of Blosc, and compares it with memcpy.
 
 %prep
-%setup -q -n c-%{name}-%{version}
+%setup -q -n c-%{pkg_name}-%{version}
 rm -r internal-complibs/snappy* internal-complibs/zlib*
 
 # Fix rpath issue
@@ -48,43 +51,49 @@ sed -i '1i  #!/usr/bin/python' bench/plot-speeds.py
 
 # Use the proper library path and SSE2 instruction on 64bits systems
 %ifarch x86_64
-%cmake %{?_cmake_lib_suffix64} \
+%{?scl:scl enable %{scl} - << \EOF}
+%cmake28 %{?_cmake_lib_suffix64} \
     -DCMAKE_BUILD_TYPE:STRING="Debug" \
     -DCMAKE_C_FLAGS:STRING="%{optflags}" \
     -DCMAKE_INSTALL_PREFIX=%{_prefix} \
     -DBUILD_STATIC:BOOL=OFF \
     -DTEST_INCLUDE_BENCH_SUITE:BOOL=OFF .
 %else
-%cmake -DCMAKE_C_FLAGS:STRING="%{optflags}" \
+%cmake28 -DCMAKE_C_FLAGS:STRING="%{optflags}" \
     -DCMAKE_BUILD_TYPE:STRING="Debug" \
     -DCMAKE_INSTALL_PREFIX=%{_prefix} \
     -DBUILD_STATIC:BOOL=OFF \
     -DTEST_INCLUDE_BENCH_SUITE:BOOL=OFF .
 %endif
+%{?scl:EOF}
 
 %build
+%{?scl:scl enable %{scl} - << \EOF}
 make VERBOSE=1 %{?_smp_mflags}
+%{?scl:EOF}
 
-%check
-# make test VERBOSE=1
-tests/test_api
-tests/test_basics
-for c in lz4 lz4hc snappy zlib; do
-    LD_LIBRARY_PATH=blosc bench/bench $c single 1
-    LD_LIBRARY_PATH=blosc bench/bench $c single
-done
+# %check
+# %{?scl:scl enable %{scl} - << \EOF}
+# # make test VERBOSE=1
+# tests/test_api
+# tests/test_basics
+# for c in lz4 lz4hc snappy zlib; do
+#     LD_LIBRARY_PATH=blosc bench/bench $c single 1
+#     LD_LIBRARY_PATH=blosc bench/bench $c single
+# done
+# %{?scl:EOF}
 
 %install
 
 make install DESTDIR=${RPM_BUILD_ROOT}
 
 mkdir -p ${RPM_BUILD_ROOT}/%{_pkgdocdir}/bench
-install -p bench/plot-speeds.py* ${RPM_BUILD_ROOT}/%{_pkgdocdir}/bench/
+# install -p bench/plot-speeds.py* ${RPM_BUILD_ROOT}/%{_pkgdocdir}/bench/
 install -pm 0644 bench/*.c ${RPM_BUILD_ROOT}/%{_pkgdocdir}/bench
 
 mkdir -p ${RPM_BUILD_ROOT}/%{_bindir}
-install -p bench/bench ${RPM_BUILD_ROOT}/%{_bindir}/%{name}-bench
-install -p bench/plot-speeds.py ${RPM_BUILD_ROOT}/%{_bindir}/%{name}-plot-times 
+install -p bench/bench ${RPM_BUILD_ROOT}/%{_bindir}/%{pkg_name}-bench
+# install -p bench/plot-speeds.py ${RPM_BUILD_ROOT}/%{_bindir}/%{pkg_name}-plot-times
 
 
 %post -p /sbin/ldconfig
@@ -93,6 +102,8 @@ install -p bench/plot-speeds.py ${RPM_BUILD_ROOT}/%{_bindir}/%{name}-plot-times
 
 %files
 %exclude %{_pkgdocdir}/bench/
+# Once the bench backage is built, the next line should go away!
+%exclude %{_bindir}/%{pkg_name}-bench
 %doc README.rst ANNOUNCE.rst RELEASE_NOTES.rst README_HEADER.rst README_THREADED.rst RELEASING.rst
 %{_libdir}/libblosc.so.*
 
@@ -101,13 +112,18 @@ install -p bench/plot-speeds.py ${RPM_BUILD_ROOT}/%{_bindir}/%{name}-plot-times
 %{_libdir}/libblosc.so
 %{_includedir}/blosc.h
 
-%files bench
-%{_pkgdocdir}/bench/*.c
-%{_bindir}/%{name}-bench
-%{_bindir}/%{name}-plot-times
+# %files bench
+# %{_pkgdocdir}/bench/*.c
+# %{_bindir}/%{pkg_name}-bench
+# # %{_bindir}/%{pkg_name}-plot-times
 
 
 %changelog
+* Sat Aug 16 2014 Dmitrijs Milajevs <dimazest@gmail.com> - 1.4.1-1
+- Cleanup and adoptations for Software collections.
+- Update to 1.4.1
+- Don't create bench package as the benchmark scripts are not Python 3 compatible.
+
 * Fri Aug 15 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.3.5-3
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
 
