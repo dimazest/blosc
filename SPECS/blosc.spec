@@ -17,6 +17,7 @@ BuildRequires: cmake28
 #BuildRequires: lz4-devel
 BuildRequires: snappy-devel
 BuildRequires: zlib-devel
+%{?scl:BuildRequires: %{scl}-build %{scl}-runtime}
 
 %description
 Blosc is a compression library designed to transmit data to the processor
