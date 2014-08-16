@@ -10,6 +10,9 @@ Release: 1%{?dist}
 License: MIT
 Source: https://github.com/FrancescAlted/blosc/archive/v%{version}.tar.gz
 URL:  https://github.com/FrancescAlted/blosc
+
+%{?scl:Requires: %{scl}-runtime}
+
 BuildRequires: cmake28
 #BuildRequires: lz4-devel
 BuildRequires: snappy-devel
